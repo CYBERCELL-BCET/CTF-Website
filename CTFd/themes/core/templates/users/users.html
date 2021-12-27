@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block stylesheets %}
+  <style>
+    
+  </style>
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron">
+		<div class="container">
+			<h1 style="color: #BED960;">Users</h1>
+		</div>
+	</div>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				{% if q and field %}
+				<h5 class="text-muted text-center">
+					Searching for users with <strong>{{ field }}</strong> matching <strong>{{ q }}</strong>
+				</h5>
+				<h6 class="text-muted text-center pb-3">
+					Page {{ users.page }} of {{ users.total }} results
+				</h6>
+				{% endif %}
+
+				{% with form = Forms.users.PublicUserSearchForm(field=field, q=q) %}
+				<form method="GET" class="form-inline">
+					<div class="form-group col-md-2">
+						{{ form.field(class="form-control custom-select w-100") }}
+					</div>
+					<div class="form-group col-md-9" >
+						{{ form.q(class="form-control w-100 transparent", placeholder="Search for matching users") }}
+					</div>
+					<div class="form-group col-md-1 ">
+						<button type="submit" class="btn btn-primary w-55">
+							<i class="fas fa-search" aria-hidden="true"></i>
+						</button>
+					</div>
+				</form>
+				{% endwith %}
+			</div>
+		</div>
+
+		<hr>
+
+		<div class="row">
+			<div class="col-md-12">
+				<table class="table table-striped">
+					<thead>
+					<tr>
+						<td><b>User</b></td>
+						<td><b>Website</b></td>
+						<td class="d-none d-md-table-cell d-lg-table-cell"><b>Affiliation</b></td>
+						<td class="d-none d-md-table-cell d-lg-table-cell"><b>Country</b></td>
+					</tr>
+					</thead>
+					<tbody>
+					{% for user in users.items %}
+						<tr>
+							<td>
+								{% if scores_visible() %}
+									<a href="{{ url_for('users.public', user_id=user.id) }}" class="user-name">
+										{{ user.name | truncate(50) }}
+									</a>
+								{% else %}
+									<span>{{ user.name | truncate(50) }}</span>
+								{% endif %}
+								{% if user.oauth_id %}
+									<a href="https://majorleaguecyber.org/u/{{ user.name }}">
+										<span class="badge badge-primary">Official</span>
+									</a>
+								{% endif %}
+							</td>
+							<td class="text-center" style="width: 10px;">
+								{% if user.website and (user.website.startswith('http://') or user.website.startswith('https://')) %}
+									<a href="{{ user.website }}" target="_blank" rel="noopener">
+										<i class="fas fa-external-link-alt" data-toggle="tooltip" data-placement="top"
+										   title="{{ user.website }}"></i>
+									</a>
+								{% endif %}
+							</td>
+							<td class="d-none d-md-table-cell d-lg-table-cell text-light">
+								{% if user.affiliation %}
+									{% if user.affiliation | length > 50 %}
+										<span data-toggle="tooltip" data-placement="top" title="{{ user.affiliation }}" class="affliliation-text">
+									{% if user.affiliation %}{{ user.affiliation | truncate(50) }}{% endif %}
+								</span>
+									{% else %}
+										<span>
+									{% if user.affiliation %}{{ user.affiliation | truncate(50) }}{% endif %}
+								</span>
+									{% endif %}
+								{% endif %}
+							</td>
+							<td class="d-none d-md-table-cell d-lg-table-cell">
+								<span class="country-text">
+									{% if user.country %}
+										<i class="flag-{{ user.country.lower() }} country-text"></i>
+										{{ lookup_country_code(user.country) }}
+									{% endif %}
+								</span>
+							</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		{% if users.pages > 1 %}
+			<div class="row">
+				<div class="col-md-12">
+					<div class="text-center">Page
+						<br>
+						{% if users.page != 1 %}
+						<a href="{{ prev_page }}">&lt;&lt;&lt;</a>
+						{% endif %}
+						<select class="page-select">
+							{% for page in range(1, users.pages + 1) %}
+							<option {% if users.page == page %}selected{% endif %}>{{ page }}</option>
+							{% endfor %}
+						</select>
+						{% if users.next_num %}
+						<a href="{{ next_page }}">&gt;&gt;&gt;</a>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		{% endif %}
+	</div>
+{% endblock %}
+
+{% block scripts %}
+  <style>
+  .transparent{
+	 background: none;
+	  }
+	  .btn{
+		  position: relative;
+		  background: none;
+		  border: none;
+		  height: 49px;
+		  right: 85px;
+	  }
+	  .btn:hover{
+		  background: none;
+	  }
+	  b{
+		  color: #BED960;
+	  }
+	  .form-conrol:focus{
+		  outline: none;
+	  }
+	.user-name{
+		color: #6aa507;
+	}
+	.affliliation-text{
+		color: white;
+	}
+	.country-text{
+		color: #6aa507;
+	}
+	@media only screen and (max-width:767px){
+		  .btn{
+			  left: 55vw;
+			  bottom: 14vh;
+		  }
+	  }
+	  @media only screen and (max-width:567px){
+		  .btn{
+			  left: 75vw;
+			  bottom: 18vh;
+		  }
+	  }
+	  @media only screen and (max-width:378px){
+		  .btn{
+			  left: 65vw;
+			  bottom: 17vh;
+		  }
+	  }
+  </style>
+   <body style="background: #1a1a1a;"></body>
+{% endblock %}
